@@ -20,6 +20,8 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_UsePackage>Hydra_Core_D14</DCC_UsePackage>
+			<UsePackages>true</UsePackages>
 			<DCC_DependencyCheckOutputName>StandardVCL.exe</DCC_DependencyCheckOutputName>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
 			<DCC_ImageBase>00400000</DCC_ImageBase>

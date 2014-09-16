@@ -131,6 +131,15 @@ object frmVCLApp: TfrmVCLApp
         Action = actFileExit
       end
     end
+    object Plugins1: TMenuItem
+      Caption = 'Plugins'
+      object LoadPlugins1: TMenuItem
+        Action = actHydraLoadModules
+      end
+      object ShowLoadedModulesandPlugins1: TMenuItem
+        Action = actShowPlugins
+      end
+    end
     object Help1: TMenuItem
       Caption = '&Help'
       object About1: TMenuItem
@@ -180,6 +189,16 @@ object frmVCLApp: TfrmVCLApp
       Caption = '&Delete'
       ImageIndex = 4
       OnExecute = actItemDeleteExecute
+    end
+    object actHydraLoadModules: TAction
+      Category = 'plugins'
+      Caption = 'Load Plugins'
+      OnExecute = actHydraLoadModulesExecute
+    end
+    object actShowPlugins: TAction
+      Category = 'plugins'
+      Caption = 'Show Loaded Modules and Plugins'
+      OnExecute = actShowPluginsExecute
     end
   end
   object ImageList1: TImageList
@@ -456,5 +475,24 @@ object frmVCLApp: TfrmVCLApp
       0000D001000000000000D0010000F81F8000D011000000008001D0070000E817
       C003D80F0000E817F007C01F0000E81700000000000000000000000000000000
       000000000000}
+  end
+  object HYModuleManager1: THYModuleManager
+    AutoLoad = False
+    EnforceSecurity = False
+    ResolveInterfacesToOwner = True
+    Left = 304
+    Top = 200
+  end
+  object dlgPluginList: TTaskDialog
+    Buttons = <>
+    Caption = 'List of Plug-ins'
+    CommonButtons = [tcbClose]
+    DefaultButton = tcbClose
+    ExpandButtonCaption = 'Show Modules'
+    Flags = [tfPositionRelativeToWindow]
+    RadioButtons = <>
+    Title = 'Hydra Plugins'
+    Left = 208
+    Top = 280
   end
 end

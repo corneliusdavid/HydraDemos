@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdActns, ImgList, ActnList, Menus, StdCtrls, ComCtrls, ToolWin;
+  Dialogs, StdActns, ImgList, ActnList, Menus, StdCtrls, ComCtrls, ToolWin,
+  uHYModuleManager;
 
 type
   TfrmVCLApp = class(TForm)
@@ -36,6 +37,13 @@ type
     ToolButton4: TToolButton;
     ToolButton5: TToolButton;
     Label2: TLabel;
+    HYModuleManager1: THYModuleManager;
+    actHydraLoadModules: TAction;
+    Plugins1: TMenuItem;
+    LoadPlugins1: TMenuItem;
+    actShowPlugins: TAction;
+    ShowLoadedModulesandPlugins1: TMenuItem;
+    dlgPluginList: TTaskDialog;
     procedure actFileNewExecute(Sender: TObject);
     procedure actFileSaveExecute(Sender: TObject);
     procedure actAddItemExecute(Sender: TObject);
@@ -43,6 +51,8 @@ type
     procedure actHelpAboutExecute(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure actHydraLoadModulesExecute(Sender: TObject);
+    procedure actShowPluginsExecute(Sender: TObject);
   end;
 
 var
@@ -52,6 +62,9 @@ var
 implementation
 
 {$R *.dfm}
+
+uses
+  uHYPluginDescriptors;
 
 procedure TfrmVCLApp.actAddItemExecute(Sender: TObject);
 begin
@@ -76,10 +89,60 @@ begin
   ShowMessage('Standard VCL Demo App');
 end;
 
+procedure TfrmVCLApp.actHydraLoadModulesExecute(Sender: TObject);
+begin
+  HYModuleManager1.LoadModules(ExtractFilePath(Application.ExeName) + '*.dll');
+end;
+
 procedure TfrmVCLApp.actItemDeleteExecute(Sender: TObject);
 begin
   if lbItems.ItemIndex > -1 then
     lbItems.Items.Delete(lbItems.ItemIndex);
+end;
+
+procedure TfrmVCLApp.actShowPluginsExecute(Sender: TObject);
+
+  function PluginTypeToStr(const PluginType: THYPluginType): string;
+  begin
+    case PluginType of
+      ptNonVisual:
+        Result := 'Non-Visual';
+      ptVisual:
+        Result := 'Visual';
+      ptService:
+        Result := 'Service';
+      ptUnknown:
+        Result := 'Unknown';
+    end;
+  end;
+
+var
+  i: Integer;
+  PluginList: TStringList;
+  ModuleList: TStringList;
+begin
+  PluginList := TStringList.Create;
+  ModuleList := TStringList.Create;
+  try
+    for i := 0 to HYModuleManager1.ModuleCount - 1 do
+      ModuleList.Add(ExtractFileName(HYModuleManager1.Modules[i].FileName));
+
+    for i := 0 to HYModuleManager1.PluginDescriptorCount - 1 do begin
+      PluginList.Add(Format('Name: %s - Version %d.%d (%s)', [HYModuleManager1.PluginDescriptors[i].Name,
+                                                        HYModuleManager1.PluginDescriptors[i].MajorVersion,
+                                                        HYModuleManager1.PluginDescriptors[i].MinorVersion,
+                                                        PluginTypeToStr(HYModuleManager1.PluginDescriptors[i].PluginType)]));
+      PluginList.Add('Description: ' + HYModuleManager1.PluginDescriptors[i].Description);
+      PluginList.Add(EmptyStr);
+    end;
+
+    dlgPluginList.Text := PluginList.GetText;
+    dlgPluginList.ExpandedText := ModuleList.GetText;
+    dlgPluginList.Execute;
+  finally
+    ModuleList.Free;
+    PluginList.Free;
+  end;
 end;
 
 procedure TfrmVCLApp.FormActivate(Sender: TObject);

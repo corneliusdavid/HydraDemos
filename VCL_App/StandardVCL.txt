@@ -2,7 +2,6 @@ john
 joe
 sally
 cindy
-susan
 gary
 ron
 chris
