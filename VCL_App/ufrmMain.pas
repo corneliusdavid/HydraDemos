@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdActns, ImgList, ActnList, Menus, StdCtrls, ComCtrls, ToolWin,
-  uHYModuleManager;
+  uHYModuleManager, uHYIntf;
 
 type
   TfrmVCLApp = class(TForm)
@@ -50,9 +50,15 @@ type
     procedure actItemDeleteExecute(Sender: TObject);
     procedure actHelpAboutExecute(Sender: TObject);
     procedure FormActivate(Sender: TObject);
-    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure actHydraLoadModulesExecute(Sender: TObject);
     procedure actShowPluginsExecute(Sender: TObject);
+    procedure HYModuleManager1AfterLoadModule(Sender: THYModuleManager; aModule: THYModule);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure HYModuleManager1BeforeLoadModule(Sender: THYModuleManager;
+      const aFileName: string; var Continue: Boolean);
+  private
+    FSimpleAboutPlugin: IHYVisualPlugin;
   end;
 
 var
@@ -86,12 +92,17 @@ end;
 
 procedure TfrmVCLApp.actHelpAboutExecute(Sender: TObject);
 begin
-  ShowMessage('Standard VCL Demo App');
+  if Assigned(FSimpleAboutPlugin) then
+    FSimpleAboutPlugin.ShowWindowed
+  else
+    ShowMessage('Standard VCL Demo App');
 end;
 
 procedure TfrmVCLApp.actHydraLoadModulesExecute(Sender: TObject);
 begin
   HYModuleManager1.LoadModules(ExtractFilePath(Application.ExeName) + '*.dll');
+
+  ShowMessage('Loaded ' + IntToStr(HYModuleManager1.PluginDescriptorCount) + ' plugins');
 end;
 
 procedure TfrmVCLApp.actItemDeleteExecute(Sender: TObject);
@@ -150,10 +161,33 @@ begin
   lbItems.Items.LoadFromFile(ChangeFileExt(Application.ExeName, '.txt'));
 end;
 
-procedure TfrmVCLApp.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+procedure TfrmVCLApp.FormCreate(Sender: TObject);
 begin
-  if MessageBox(Handle, PChar('Do you want to save the list?'), PChar(Application.Title), MB_YESNO + MB_ICONQUESTION + MB_TASKMODAL) = ID_YES then
-    actFileSave.Execute;
+  FSimpleAboutPlugin := nil;
+end;
+
+procedure TfrmVCLApp.FormDestroy(Sender: TObject);
+begin
+  if Assigned(FSimpleAboutPlugin) then
+    FSimpleAboutPlugin := nil;
+end;
+
+procedure TfrmVCLApp.HYModuleManager1AfterLoadModule(Sender: THYModuleManager;
+  aModule: THYModule);
+var
+  i: Integer;
+begin
+  for i := 0 to aModule.ModuleController.FactoryCount - 1 do
+    if (aModule.ModuleController.Factories[i].Descriptor.PluginType = ptVisual) and
+       SameText('SimpleAboutPlugin', aModule.ModuleController.Factories[i].Descriptor.Name) then
+      HYModuleManager1.CreateVisualPlugin(aModule.ModuleController.Factories[i].Descriptor.Name, FSimpleAboutPlugin);
+end;
+
+procedure TfrmVCLApp.HYModuleManager1BeforeLoadModule(Sender: THYModuleManager;
+  const aFileName: string; var Continue: Boolean);
+begin
+  // don't load the Hydra library
+  Continue := Pos('RemObjects.Hydra', aFilename) = 0;
 end;
 
 end.

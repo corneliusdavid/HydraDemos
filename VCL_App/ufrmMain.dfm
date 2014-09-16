@@ -15,7 +15,8 @@ object frmVCLApp: TfrmVCLApp
   Position = poScreenCenter
   Scaled = False
   OnActivate = FormActivate
-  OnCloseQuery = FormCloseQuery
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   DesignSize = (
     446
     340)
@@ -479,6 +480,8 @@ object frmVCLApp: TfrmVCLApp
   object HYModuleManager1: THYModuleManager
     AutoLoad = False
     EnforceSecurity = False
+    OnBeforeLoadModule = HYModuleManager1BeforeLoadModule
+    OnAfterLoadModule = HYModuleManager1AfterLoadModule
     ResolveInterfacesToOwner = True
     Left = 304
     Top = 200
