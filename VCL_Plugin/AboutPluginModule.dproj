@@ -94,6 +94,11 @@
 				<Form>SimpleAboutPlugin</Form>
 				<DesignClass>THYVisualPlugin</DesignClass>
 			</DCCReference>
+			<DCCReference Include="ufrmVersionedAboutPlugin.pas">
+				<Form>VersionedAboutPlugin</Form>
+				<DesignClass>THYVisualPlugin</DesignClass>
+			</DCCReference>
+			<DCCReference Include="..\shared\uVersionedAboutIntf.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

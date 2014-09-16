@@ -55,9 +55,9 @@ type
     procedure HYModuleManager1AfterLoadModule(Sender: THYModuleManager; aModule: THYModule);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure HYModuleManager1BeforeLoadModule(Sender: THYModuleManager;
-      const aFileName: string; var Continue: Boolean);
+    procedure HYModuleManager1BeforeLoadModule(Sender: THYModuleManager; const aFileName: string; var Continue: Boolean);
   private
+    FVersionedAboutPlugin: IHYVisualPlugin;
     FSimpleAboutPlugin: IHYVisualPlugin;
   end;
 
@@ -70,7 +70,7 @@ implementation
 {$R *.dfm}
 
 uses
-  uHYPluginDescriptors;
+  uHYPluginDescriptors, uVersionedAboutIntf;
 
 procedure TfrmVCLApp.actAddItemExecute(Sender: TObject);
 begin
@@ -92,7 +92,13 @@ end;
 
 procedure TfrmVCLApp.actHelpAboutExecute(Sender: TObject);
 begin
-  if Assigned(FSimpleAboutPlugin) then
+  if Assigned(FVersionedAboutPlugin) then begin
+    (FVersionedAboutPlugin as IVersionedAboutInterface).ApplicationName := Application.Title;
+    (FVersionedAboutPlugin as IVersionedAboutInterface).MajorVersion := 4;
+    (FVersionedAboutPlugin as IVersionedAboutInterface).MinorVersion := 3;
+    (FVersionedAboutPlugin as IVersionedAboutInterface).Copyright := 'Copyright 2015';
+    FVersionedAboutPlugin.ShowWindowed;
+  end else if Assigned(FSimpleAboutPlugin) then
     FSimpleAboutPlugin.ShowWindowed
   else
     ShowMessage('Standard VCL Demo App');
@@ -164,12 +170,15 @@ end;
 procedure TfrmVCLApp.FormCreate(Sender: TObject);
 begin
   FSimpleAboutPlugin := nil;
+  FVersionedAboutPlugin := nil;
 end;
 
 procedure TfrmVCLApp.FormDestroy(Sender: TObject);
 begin
-  if Assigned(FSimpleAboutPlugin) then
+ if Assigned(FSimpleAboutPlugin) then
     FSimpleAboutPlugin := nil;
+  if Assigned(FVersionedAboutPlugin) then
+    FVersionedAboutPlugin := nil;
 end;
 
 procedure TfrmVCLApp.HYModuleManager1AfterLoadModule(Sender: THYModuleManager;
@@ -178,9 +187,12 @@ var
   i: Integer;
 begin
   for i := 0 to aModule.ModuleController.FactoryCount - 1 do
-    if (aModule.ModuleController.Factories[i].Descriptor.PluginType = ptVisual) and
-       SameText('SimpleAboutPlugin', aModule.ModuleController.Factories[i].Descriptor.Name) then
-      HYModuleManager1.CreateVisualPlugin(aModule.ModuleController.Factories[i].Descriptor.Name, FSimpleAboutPlugin);
+    if (aModule.ModuleController.Factories[i].Descriptor.PluginType = ptVisual) then begin
+      if SameText('SimpleAboutPlugin', aModule.ModuleController.Factories[i].Descriptor.Name) then
+        HYModuleManager1.CreateVisualPlugin(aModule.ModuleController.Factories[i].Descriptor.Name, FSimpleAboutPlugin)
+      else if SameText('VersionedAboutPlugin', aModule.ModuleController.Factories[i].Descriptor.Name) then
+        HYModuleManager1.CreateVisualPlugin(aModule.ModuleController.Factories[i].Descriptor.Name, FVersionedAboutPlugin);
+    end;
 end;
 
 procedure TfrmVCLApp.HYModuleManager1BeforeLoadModule(Sender: THYModuleManager;
